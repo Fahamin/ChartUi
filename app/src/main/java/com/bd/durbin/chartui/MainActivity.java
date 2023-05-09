@@ -10,6 +10,7 @@ import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -22,6 +23,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
@@ -37,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private PieChart chart3;
     private LineChart chart2;
     private BarChart chart1;
+    BarData barData;
+    BarDataSet barDataSet;
+    List barEntriesArrayList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         Linechart2Code();
 
         Barchart1Code();
-        setData1(6, 190);
+
 
         setData3(3, 10);
         setData2(13, 50);
@@ -67,46 +73,26 @@ public class MainActivity extends AppCompatActivity {
 
         chart1 = findViewById(R.id.chart1);
         //  chart1.setOnChartValueSelectedListener(this);
-
         chart1.setDrawBarShadow(false);
-        chart1.setDrawValueAboveBar(true);
-
-        chart1.getDescription().setEnabled(false);
-
-        // if more than 60 entries are displayed in the chart, no values will be
-        // drawn
-        chart1.setMaxVisibleValueCount(60);
-
-        // scaling can now only be done on x- and y-axis separately
+        chart1.setDrawValueAboveBar(false);
+        // baground line
+        chart1.getAxisRight().setDrawGridLines(false);
+        chart1.getAxisLeft().setDrawGridLines(false);
+        chart1.getXAxis().setDrawGridLines(false);
         chart1.setPinchZoom(false);
-
         chart1.setDrawGridBackground(false);
-        // chart.setDrawYLabels(false);
 
-        ValueFormatter xAxisFormatter = new DayAxisValueFormatter(chart1);
 
-        XAxis xAxis = chart1.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f); // only intervals of 1 day
-        xAxis.setLabelCount(7);
-        xAxis.setValueFormatter(xAxisFormatter);
-
-        ValueFormatter custom = new MyValueFormatter("");
-
-        YAxis leftAxis = chart1.getAxisLeft();
-        leftAxis.setLabelCount(8, false);
-        leftAxis.setValueFormatter(custom);
-        leftAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
-        leftAxis.setSpaceTop(15f);
-        leftAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
-
-        YAxis rightAxis = chart1.getAxisRight();
-        rightAxis.setDrawGridLines(false);
-        rightAxis.setLabelCount(8, false);
-        rightAxis.setValueFormatter(custom);
-        rightAxis.setSpaceTop(15f);
-        rightAxis.setAxisMinimum(0f); // this replaces setStartAtZero(true)
+        final ArrayList<String> xAxisLabel = new ArrayList<>();
+        xAxisLabel.add("Mon");
+        xAxisLabel.add("Tue");
+        xAxisLabel.add("Wed");
+        xAxisLabel.add("Thu");
+        xAxisLabel.add("Fri");
+        xAxisLabel.add("Sat");
+        xAxisLabel.add("Sun");
+        chart1.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        chart1.getXAxis().setValueFormatter(new IndexAxisValueFormatter(xAxisLabel));
 
         Legend l = chart1.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
@@ -118,77 +104,23 @@ public class MainActivity extends AppCompatActivity {
         l.setTextSize(11f);
         l.setXEntrySpace(4f);
 
-        XYMarkerView mv = new XYMarkerView(this, xAxisFormatter);
-        mv.setChartView(chart1); // For bounds control
-        chart1.setMarker(mv); // Set the marker to the chart
 
+        barEntriesArrayList = new ArrayList<>();
 
-        // chart.setDrawLegend(false);
+        // adding new entry to our array list with bar
+        // entry and passing x and y axis value to it.
+        barEntriesArrayList.add(new BarEntry(1f, 4));
+        barEntriesArrayList.add(new BarEntry(2f, 6));
+        barEntriesArrayList.add(new BarEntry(3f, 8));
+        barEntriesArrayList.add(new BarEntry(4f, 2));
+        barEntriesArrayList.add(new BarEntry(5f, 4));
+        barEntriesArrayList.add(new BarEntry(6f, 1));
+
+        barDataSet = new BarDataSet(barEntriesArrayList, "bar chart");
+        barDataSet.setColors(new int[] {Color.RED, Color.GREEN, Color.GRAY, Color.BLACK, Color.BLUE});
+        barData = new BarData(barDataSet);
+        chart1.setData(barData);
     }
-
-    private void setData1(int count, float range) {
-
-        float start = 1f;
-
-        ArrayList<BarEntry> values = new ArrayList<>();
-
-        for (int i = (int) start; i < start + count; i++) {
-            float val = (float) (Math.random() * (range + 1));
-
-            if (Math.random() * 100 < 25) {
-                values.add(new BarEntry(i, val, getResources().getDrawable(R.drawable.star)));
-            } else {
-                values.add(new BarEntry(i, val));
-            }
-        }
-
-        BarDataSet set1;
-
-        if (chart1.getData() != null &&
-                chart1.getData().getDataSetCount() > 0) {
-            set1 = (BarDataSet) chart1.getData().getDataSetByIndex(0);
-            set1.setValues(values);
-            chart1.getData().notifyDataChanged();
-            chart1.notifyDataSetChanged();
-
-        } else {
-            set1 = new BarDataSet(values, "The year 2017");
-
-            set1.setDrawIcons(false);
-
-            int startColor1 = ContextCompat.getColor(this, android.R.color.holo_orange_light);
-            int startColor2 = ContextCompat.getColor(this, android.R.color.holo_blue_light);
-            int startColor3 = ContextCompat.getColor(this, android.R.color.holo_orange_light);
-            int startColor4 = ContextCompat.getColor(this, android.R.color.holo_green_light);
-            int startColor5 = ContextCompat.getColor(this, android.R.color.holo_red_light);
-            int endColor1 = ContextCompat.getColor(this, android.R.color.holo_blue_dark);
-            int endColor2 = ContextCompat.getColor(this, android.R.color.holo_purple);
-            int endColor3 = ContextCompat.getColor(this, android.R.color.holo_green_dark);
-            int endColor4 = ContextCompat.getColor(this, android.R.color.holo_red_dark);
-            int endColor5 = ContextCompat.getColor(this, android.R.color.holo_orange_dark);
-
-            List<Fill> gradientFills = new ArrayList<>();
-            gradientFills.add(new Fill(startColor1, endColor1));
-            gradientFills.add(new Fill(startColor2, endColor2));
-            gradientFills.add(new Fill(startColor3, endColor3));
-            gradientFills.add(new Fill(startColor4, endColor4));
-            gradientFills.add(new Fill(startColor5, endColor5));
-
-          //   set1.setFills(gradientFills);
-
-            ArrayList<IBarDataSet> dataSets = new ArrayList<>();
-            dataSets.add(set1);
-
-            BarData data = new BarData(dataSets);
-            data.setValueTextSize(10f);
-            data.setBarWidth(0.9f);
-
-            chart1.setData(data);
-        }
-    }
-
-
-
 
 
     private void Linechart2Code() {
@@ -272,7 +204,6 @@ public class MainActivity extends AppCompatActivity {
         // set data
         chart2.setData(data);
     }
-
 
 
     private void Piechart3Code() {

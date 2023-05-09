@@ -31,7 +31,6 @@ public class DayAxisValueFormatter extends ValueFormatter
         String yearName = String.valueOf(year);
 
         if (chart.getVisibleXRange() > 30 * 6) {
-
             return monthName + " " + yearName;
         } else {
 
